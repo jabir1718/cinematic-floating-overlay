@@ -5,13 +5,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.view.Gravity;
-import android.view.ViewGroup;
 
 public class MainActivity extends Activity {
+
+    private TextView status;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,15 +28,15 @@ public class MainActivity extends Activity {
         title.setTextSize(24);
         title.setGravity(Gravity.CENTER);
 
-        Button permissionButton = new Button(this);
-        permissionButton.setText("Enable Floating Overlay");
-
-        TextView status = new TextView(this);
-        status.setText("Allow permission to display effects over other apps.");
+        status = new TextView(this);
+        status.setText("Enable permission to start the floating panel.");
         status.setTextSize(16);
         status.setGravity(Gravity.CENTER);
 
-        permissionButton.setOnClickListener(v -> {
+        Button startButton = new Button(this);
+        startButton.setText("Enable / Start Overlay");
+
+        startButton.setOnClickListener(v -> {
             if (!Settings.canDrawOverlays(this)) {
                 Intent intent = new Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -43,13 +44,18 @@ public class MainActivity extends Activity {
                 );
                 startActivity(intent);
             } else {
-                status.setText("Overlay permission is enabled!");
+                try {
+                    startService(new Intent(this, OverlayService.class));
+                    status.setText("Floating panel started!");
+                } catch (Exception e) {
+                    status.setText("Could not start overlay: " + e.getMessage());
+                }
             }
         });
 
         layout.addView(title);
         layout.addView(status);
-        layout.addView(permissionButton);
+        layout.addView(startButton);
 
         setContentView(layout);
     }
@@ -57,5 +63,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (status != null && Settings.canDrawOverlays(this)) {
+            status.setText("Permission enabled. Tap the button to start overlay.");
+        }
     }
 }
