@@ -19,33 +19,37 @@ public class OverlayService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && !android.provider.Settings.canDrawOverlays(this)) {
+            stopSelf();
+            return;
+        }
+
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         overlayView = new TextView(this);
-        overlayView.setText("⚡ CINEMATIC OVERLAY ⚡\nWaiting for LIVE events...");
+        overlayView.setText("⚡ CINEMATIC OVERLAY ⚡\nFloating panel is working!");
         overlayView.setTextColor(Color.WHITE);
-        overlayView.setTextSize(16);
+        overlayView.setTextSize(18);
         overlayView.setGravity(Gravity.CENTER);
-        overlayView.setPadding(24, 20, 24, 20);
+        overlayView.setPadding(32, 24, 32, 24);
         overlayView.setBackgroundColor(Color.rgb(35, 20, 65));
 
-        int windowType;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            windowType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        } else {
-            windowType = WindowManager.LayoutParams.TYPE_PHONE;
-        }
+        int windowType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PHONE;
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            windowType,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                windowType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.TRANSLUCENT
         );
 
         params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-        params.y = 120;
+        params.y = 150;
 
         try {
             windowManager.addView(overlayView, params);
