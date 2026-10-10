@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.graphics.Color;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -21,41 +22,63 @@ public class MainActivity extends Activity {
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setGravity(Gravity.CENTER);
-        layout.setPadding(32, 32, 32, 32);
+        layout.setPadding(28, 28, 28, 28);
+        layout.setBackgroundColor(Color.rgb(10, 10, 22));
 
         TextView title = new TextView(this);
-        title.setText("Cinematic Floating Overlay");
-        title.setTextSize(24);
+        title.setText("CINEMATIC OVERLAY");
+        title.setTextSize(25);
+        title.setTextColor(Color.CYAN);
         title.setGravity(Gravity.CENTER);
 
+        TextView description = new TextView(this);
+        description.setText(
+            "Transparent LIVE event overlay\n" +
+            "Neon effects • Comments • Likes • Gifts"
+        );
+        description.setTextSize(15);
+        description.setTextColor(Color.WHITE);
+        description.setGravity(Gravity.CENTER);
+        description.setPadding(0, 24, 0, 24);
+
         status = new TextView(this);
-        status.setText("Enable permission to start the floating panel.");
-        status.setTextSize(16);
+        status.setTextColor(Color.LTGRAY);
+        status.setTextSize(14);
         status.setGravity(Gravity.CENTER);
+        status.setText("Enable overlay permission to begin.");
 
-        Button startButton = new Button(this);
-        startButton.setText("Enable / Start Overlay");
+        Button start = new Button(this);
+        start.setText("ENABLE / START OVERLAY");
 
-        startButton.setOnClickListener(v -> {
+        start.setOnClickListener(v -> {
             if (!Settings.canDrawOverlays(this)) {
-                Intent intent = new Intent(
+                Intent permissionIntent = new Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:" + getPackageName())
                 );
-                startActivity(intent);
-            } else {
-                try {
-                    startService(new Intent(this, OverlayService.class));
-                    status.setText("Floating panel started!");
-                } catch (Exception e) {
-                    status.setText("Could not start overlay: " + e.getMessage());
-                }
+                startActivity(permissionIntent);
+                return;
+            }
+
+            try {
+                Intent serviceIntent =
+                    new Intent(this, OverlayService.class);
+
+                startService(serviceIntent);
+
+                status.setText(
+                    "Overlay started. Open TikTok LIVE."
+                );
+
+            } catch (Exception e) {
+                status.setText("Error: " + e.getMessage());
             }
         });
 
         layout.addView(title);
+        layout.addView(description);
         layout.addView(status);
-        layout.addView(startButton);
+        layout.addView(start);
 
         setContentView(layout);
     }
@@ -65,7 +88,9 @@ public class MainActivity extends Activity {
         super.onResume();
 
         if (status != null && Settings.canDrawOverlays(this)) {
-            status.setText("Permission enabled. Tap the button to start overlay.");
+            status.setText(
+                "Permission enabled. Tap START OVERLAY."
+            );
         }
     }
 }
